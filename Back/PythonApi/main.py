@@ -10,7 +10,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from db.config import *
 from aws.s3 import putobject, deleteobject, getobject, s3_getlink
 from aws.rekognition import compare_images, detect_features_in_image, detect_features_in_image_login, fatial_analisis, s3_extract_text
-from models.models import Login, id, Chat
+from aws.translate import translate_text
+from models.models import Login, id, Chat, Translate
 from aws.env import *
 
 app = FastAPI()
@@ -124,13 +125,10 @@ async def login_camera(photo: str = Form(...), user: str = Form(...)):
     image = base64.b64decode(photo)
     compare = compare_images(profile_photo, image)
 
-    
     if compare > 80:
         link = s3_getlink(response[0][2])
         features = detect_features_in_image(response[0][2])
-                  
 
-        
         toreturn = {"user":response[0][0],
                 "name":response[0][1],
                 "photo":link,
@@ -321,6 +319,27 @@ async def seealbum(item: id):
     arreglo.append(formatted_data2)
     return arreglo
 
+@app.post("/individual_photo")
+async def seeing_photo(item: id):
+    sql = f"SELECT name, photo, description FROM photoalbum WHERE id = %s"
+    params = (item.user, )
+    response = execute_query(sql, params)
+    
+    link = s3_getlink(response[0][1])
+
+    toreturn = {
+            "name":response[0][0],
+            "photo":link,
+            "description":response[0][2]
+    }
+    return toreturn
+
+@app.post("/translate")
+async def translate_description(item: Translate):
+    response = translate_text(item.message)
+
+    return response
+
 @app.post("/albumsprofile")
 async def seealbum(item: id):
     sql = f"SELECT pp.photo AS photo_profile, pp.name AS photo_name FROM user u JOIN photoprofile pp ON u.id = pp.user_id WHERE u.id = %s"
@@ -344,6 +363,8 @@ async def extractingtext(photo: UploadFile = File(...)):
 
     
     return response
+
+
 @app.post("/send_2bot")
 async def chatbot(item: Chat):
     
