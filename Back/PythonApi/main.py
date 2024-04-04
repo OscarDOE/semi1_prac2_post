@@ -304,17 +304,12 @@ async def seealbum(item: id):
         # Si el álbum ya está en el diccionario, agregamos la imagen al álbum existente
         print("TrADCUCCIONES")
         link = s3_getlink(photo_album)
-        eng = translate_text(photo_description, "eng")
-        print("ENG",eng)
-        jp = translate_text(photo_description, "jp")
-        print("JP",jp)
-        fr = translate_text(photo_description, "fr")
-        print("FR",fr)
+        translates = translate_text(photo_description, "eng")
         if album_id in albums:
-            albums[album_id]["fotos"].append({"id": photo_id, "url": link, "name": photo_name, "description": photo_description, "description_eng": eng, "description_jp": jp, "description_fr": fr})
+            albums[album_id]["fotos"].append({"id": photo_id, "url": link, "name": photo_name, "description": photo_description, "descriptions": translates})
         # Si no, creamos un nuevo álbum y agregamos la imagen al álbum
         else:
-            albums[album_id] = {"id": album_id, "nombre": album_name, "fotos": [{"id": photo_id, "url": link, "name": photo_name, "description": photo_description, "description_eng": eng, "description_jp": jp, "description_fr": fr}]}
+            albums[album_id] = {"id": album_id, "nombre": album_name, "fotos": [{"id": photo_id, "url": link, "name": photo_name, "description": photo_description, "descriptions": translates}]}
 
     formatted_data = list(albums.values())
 
