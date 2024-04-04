@@ -92,9 +92,10 @@ async def loginuser(item: Login):
     link = s3_getlink(response[0][2])
 
     print("KEY",response[0][2])
-    features = detect_features_in_image_login(response[0][2])
+    # features = detect_features_in_image_login(response[0][2])
+    features = fatial_analisis(response[0][2])
 
-
+    print("FESATURES: ", features)
 
     # print("RESPONSE LOGIN", response[0])
     toreturn = {"user":response[0][0],
@@ -128,7 +129,7 @@ async def login_camera(photo: str = Form(...), user: str = Form(...)):
 
     if compare > 80:
         link = s3_getlink(response[0][2])
-        features = detect_features_in_image_login(response[0][2])
+        features = fatial_analisis(response[0][2])
 
         toreturn = {"user":response[0][0],
                 "name":response[0][1],

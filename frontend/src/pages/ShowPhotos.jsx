@@ -118,7 +118,7 @@ const ShowPhotos = () => {
                                     <Grid xs={2}  item>
                                         <Item>
                                             <img
-                                                src={foto.url}
+                                                src={usuario_logeado?.photo}
                                                 style={{ width: "100%" }}
                                             />
                                         </Item>

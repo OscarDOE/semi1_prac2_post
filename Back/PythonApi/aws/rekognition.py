@@ -77,10 +77,65 @@ def fatial_analisis(image):
                     'Name': image
                 }
             },
-            Attributes=['ALL']
+            Attributes=['ALL'] 
         )
-        # print("RESPONSE FATIAL: ", response)
-        return response
+        caracteristicas = []
+        if response['FaceDetails']:
+            for rostro in response['FaceDetails']:
+                emociones = [emocion['Type'] for emocion in rostro['Emotions']]
+                edad = "Edad: {}-{}".format(rostro['AgeRange']['Low'], rostro['AgeRange']['High'])
+                genero = rostro['Gender']['Value']
+                sonrisa = "Sonrisa: {}".format(rostro['Smile']['Value'])
+                gafas = "Gafas: {}".format(rostro['Eyeglasses']['Value'])
+                lentes_sol = "Lentes de sol: {}".format(rostro['Sunglasses']['Value'])
+                barba = "Barba: {}".format(rostro['Beard']['Value'])
+                bigote = "Bigote: {}".format(rostro['Mustache']['Value'])
+                ojos_abiertos = "Ojos abiertos: {}".format(rostro['EyesOpen']['Value'])
+                boca_abierta = "Boca abierta: {}".format(rostro['MouthOpen']['Value'])
+                
+                caracteristicas.extend(emociones + [edad, genero, sonrisa, gafas, lentes_sol, barba, bigote, ojos_abiertos, boca_abierta])
+
+        return caracteristicas
+
+        # detalles_caras = []
+
+        # # print("REKOG LABERS : ",response)
+        # if response['FaceDetails']:
+        #     print("Se han detectado las siguientes caras:")
+        #     for rostro in response['FaceDetails']:
+        #         print("Detalles del rostro:")
+        #         print("Edad: {}-{}".format(rostro['AgeRange']['Low'], rostro['AgeRange']['High']))
+        #         print("Género: {}".format(rostro['Gender']['Value']))
+                
+        #         # Emoción más prominente
+        #         emocion_prominente = max(rostro['Emotions'], key=lambda x: x['Confidence'])
+        #         print("Emoción más prominente: {} (Confianza: {})".format(emocion_prominente['Type'], emocion_prominente['Confidence']))
+                
+        #         # Detalles sobre los atributos faciales
+        #         print("Atributos faciales:")
+        #         print("- Sonrisa: {} (Confianza: {})".format(rostro['Smile']['Value'], rostro['Smile']['Confidence']))
+        #         print("- Uso de gafas: {} (Confianza: {})".format(rostro['Eyeglasses']['Value'], rostro['Eyeglasses']['Confidence']))
+        #         print("- Uso de lentes de sol: {} (Confianza: {})".format(rostro['Sunglasses']['Value'], rostro['Sunglasses']['Confidence']))
+        #         print("- Presencia de barba: {} (Confianza: {})".format(rostro['Beard']['Value'], rostro['Beard']['Confidence']))
+        #         print("- Presencia de bigote: {} (Confianza: {})".format(rostro['Mustache']['Value'], rostro['Mustache']['Confidence']))
+        #         print("- Ojos abiertos: {} (Confianza: {})".format(rostro['EyesOpen']['Value'], rostro['EyesOpen']['Confidence']))
+        #         print("- Boca abierta: {} (Confianza: {})".format(rostro['MouthOpen']['Value'], rostro['MouthOpen']['Confidence']))
+                
+        #         print("-------------------------------------------------")
+        #         detalle_rostro = {
+        #             "edad": "{}-{}".format(rostro['AgeRange']['Low'], rostro['AgeRange']['High']),
+        #             "genero": rostro['Gender']['Value'],
+        #             "emocion_prominente": max(rostro['Emotions'], key=lambda x: x['Confidence'])['Type'],
+        #             "sonrisa": {"valor": rostro['Smile']['Value'], "confianza": rostro['Smile']['Confidence']},
+        #             "gafas": {"valor": rostro['Eyeglasses']['Value'], "confianza": rostro['Eyeglasses']['Confidence']},
+        #             "lentes_sol": {"valor": rostro['Sunglasses']['Value'], "confianza": rostro['Sunglasses']['Confidence']},
+        #             "barba": {"valor": rostro['Beard']['Value'], "confianza": rostro['Beard']['Confidence']},
+        #             "bigote": {"valor": rostro['Mustache']['Value'], "confianza": rostro['Mustache']['Confidence']},
+        #             "ojos_abiertos": {"valor": rostro['EyesOpen']['Value'], "confianza": rostro['EyesOpen']['Confidence']},
+        #             "boca_abierta": {"valor": rostro['MouthOpen']['Value'], "confianza": rostro['MouthOpen']['Confidence']}
+        #         }
+        #         detalles_caras.append(detalle_rostro)
+        # return detalles_caras
     except Exception as e:
         print("Error en la llamada a la API de Rekognition:", e)
 

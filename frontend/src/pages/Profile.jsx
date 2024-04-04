@@ -167,7 +167,7 @@ const Profile = () => {
                         <Button onClick={editarPerfil} variant="contained" sx={{ mr: 3 }}>
                             Editar Perfil
                         </Button>
-                        <Button onClick={extraerTexto} variant="contained">
+                        <Button onClick={extraerTexto} variant="contained" sx={{ mr: 3 }}>
                             Extraer Texto
                         </Button>
                         <Button onClick={chatBot} variant="contained">

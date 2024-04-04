@@ -37,7 +37,7 @@ const Login = () => {
         const resp = await endpoint.json();
         console.log(resp);
         
-        if (endpoint.status === 400) {
+        if (endpoint.status != 200) {
             setError(resp.message);
         } else {
             setError(null);
