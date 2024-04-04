@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Alert, Grid, Paper, TextField, Button, Box } from '@mui/material';
+import { Alert, Grid, Paper, TextField, Button, Box, Chip } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
 import Cookies from 'universal-cookie';
@@ -15,12 +15,15 @@ const Profile = () => {
         color: theme.palette.text.secondary,
     }));
 
+    // useEffect(() => {getTags();}, []);
+
 
 
     const ruta_AWS = '';
     const navigate = useNavigate();
     const cookies = new Cookies();
     const usuario_logeado = cookies.get('session');
+    console.log(usuario_logeado);
 
 
 
@@ -76,7 +79,7 @@ const Profile = () => {
     return (
         <Box sx={{ flexGrow: 1 }}>
 
-            <Grid container spacing={4} justifyContent="center" alignItems="center" style={{ marginTop: '20px' }}>
+            <Grid container spacing={4} justifyContent="center" alignItems="center" style={{ marginTop: '1px' }}>
                 <Grid item xs={8}>
                     <Item >
                         <h1>Perfil</h1>
@@ -117,6 +120,26 @@ const Profile = () => {
                         />
 
                     </Item>
+
+                    <br></br>
+
+                    <Item sx={{ '& button': { m: 2 } }}>
+                        
+                        <h4>Características:</h4>
+                        <br></br>
+
+                        <Grid container spacing={1}>
+                            {usuario_logeado?.features.map((feature, index) => (
+                                <Grid item key={index}>
+                                    <Chip label={feature} variant="outlined" />
+                                </Grid>
+                            ))}
+                        </Grid>
+
+                        
+
+                    </Item>
+
                 </Grid>
             </Grid>
 

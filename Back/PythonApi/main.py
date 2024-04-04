@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from db.config import *
 from aws.s3 import putobject, deleteobject, getobject, s3_getlink
-from aws.rekognition import compare_images, detect_features_in_image, fatial_analisis, s3_extract_text
+from aws.rekognition import compare_images, detect_features_in_image, detect_features_in_image_login, fatial_analisis, s3_extract_text
 from models.models import Login, id, Chat
 from aws.env import *
 
@@ -90,9 +90,7 @@ async def loginuser(item: Login):
     link = s3_getlink(response[0][2])
 
     print("KEY",response[0][2])
-    features = fatial_analisis(response[0][2])
-    features = features['FaceDetails'][0]
-    print(features)
+    features = detect_features_in_image_login(response[0][2])
 
 
 
@@ -108,9 +106,9 @@ async def loginuser(item: Login):
     #         "user" : item.user}
 
 @app.post("/camera_login")
-async def login_camera(photo: UploadFile = File(...), user: str = Form(...)):
+async def login_camera(photo: str = Form(...), user: str = Form(...)):
     sql = f"SELECT COUNT(*) AS exist FROM user WHERE user = %s"
-    params = (user)
+    params = (user,)
     response = execute_query(sql, params)
 
     print(response)
@@ -122,22 +120,26 @@ async def login_camera(photo: UploadFile = File(...), user: str = Form(...)):
     response = execute_query(sql, params)
     
 
-    file_contents = await photo.read()
     profile_photo = response[0][2]
-    compare = compare_images(profile_photo, file_contents)
+    image = base64.b64decode(photo)
+    compare = compare_images(profile_photo, image)
 
-    link = s3_getlink(response[0][2])
-    features = fatial_analisis(response[0][2])
-    features = features['FaceDetails'][0]
+    
+    if compare > 80:
+        link = s3_getlink(response[0][2])
+        features = detect_features_in_image(response[0][2])
+                  
 
-
-    toreturn = {"user":response[0][0],
-            "name":response[0][1],
-            "photo":link,
-            "id":response[0][3],
-            "features":features,
-    }
-    return toreturn
+        
+        toreturn = {"user":response[0][0],
+                "name":response[0][1],
+                "photo":link,
+                "id":response[0][3],
+                "features":features
+        }
+        return toreturn
+    else:
+        return {"mensaje": "No hubo match"}
 
 
 

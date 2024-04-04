@@ -13,24 +13,10 @@ const Login = () => {
 
     const navigate = useNavigate();
     const cookies = new Cookies();
-<<<<<<< HEAD
     const videoRef = useRef(null);
 
     const handleNavigate = () => {
         navigate('/profile');
-=======
-
-    const handleNavigate = () => {
-        navigate('/profile')
-    //     const usuario_logeado = cookies.get('session');
-    //     if (usuario_logeado.usuario_logeado.user_type === '0') {
-    //         navigate('/inicioAdmin');
-    //     } else if (usuario_logeado.usuario_logeado.user_type === '1') {
-    //         navigate('/inicioRecep');
-    //     } else if (usuario_logeado.usuario_logeado.user_type === '2') {
-    //         navigate('/inicio');
-    //     }
->>>>>>> ae8215af3de5028735ec41ec6f8ce17f1207ba88
     };
 
     const handleSubmit = async (e) => {
@@ -49,17 +35,51 @@ const Login = () => {
         });
 
         const resp = await endpoint.json();
+        console.log(resp);
+        
         if (endpoint.status === 400) {
             setError(resp.message);
         } else {
             setError(null);
             cookies.set('session', resp);
-            console.log("REsP , ", resp)
             handleNavigate();
         }
     };
 
-<<<<<<< HEAD
+    const takePhoto = async () => {
+        const video = videoRef.current;
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const context = canvas.getContext('2d');
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        let imageData = canvas.toDataURL('image/png');
+        imageData = imageData.replace(/^data:image\/(png|jpg);base64,/, '');
+    
+
+        
+        // Enviar la foto al backend
+        const formData = new FormData();
+        formData.append('photo', imageData);
+        formData.append('user', user.usuario);
+
+        const endpoint = await fetch(`${ruta_AWS}/camera_login`, {
+            method: 'POST',
+            body: formData
+        });
+
+        const resp = await endpoint.json();
+        if (endpoint.status === 400) {
+            setError(resp.message);
+        } else {
+            setError(null);
+            cookies.set('session', resp);
+            handleNavigate();
+        }
+
+        // Manejar la respuesta del backend aquí
+    };
+
     const handleCameraAccess = async () => {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ video: true });
@@ -70,30 +90,15 @@ const Login = () => {
     };
 
     return (
-        <Grid container justifyContent="center" alignItems="center" style={{ height: '100vh', marginTop:25 }}>
-=======
-    return (
-        <Grid container justifyContent="center" alignItems="center" style={{ height: '100vh' }}>
->>>>>>> ae8215af3de5028735ec41ec6f8ce17f1207ba88
+        <Grid container justifyContent="center" alignItems="center" style={{ height: '100vh', marginTop: 25 }}>
             <Grid item xs={12} sm={8} md={6} lg={4}>
                 <Paper elevation={3} style={{ padding: 20 }}>
                     <form onSubmit={handleSubmit}>
                         <Grid container direction="column" spacing={2}>
                             <Grid item>
-<<<<<<< HEAD
                                 <div className="avatar" style={{ textAlign: 'center' }}>
                                     <img src="https://bit.ly/31pHqJb" alt="" />
-
                                 </div>
-
-
-=======
-                                
-                            <div className="avatar" style={{ textAlign: 'center' }}>
-                                <img src="https://bit.ly/31pHqJb" alt="" />
-                            </div>
-                                
->>>>>>> ae8215af3de5028735ec41ec6f8ce17f1207ba88
                             </Grid>
                             <Grid item>
                                 <div className="header">Ingresa tus datos</div>
@@ -121,13 +126,15 @@ const Login = () => {
                                 <Button type="submit" variant="contained" color="primary" fullWidth>
                                     Login
                                 </Button>
-<<<<<<< HEAD
-                                <Button variant="contained" color="primary" style={{marginTop:10, marginBottom:10}} onClick={handleCameraAccess} fullWidth>
+                                <Button variant="contained" color="primary" style={{ marginTop: 10, marginBottom: 10 }} onClick={handleCameraAccess} fullWidth>
                                     Face ID
                                 </Button>
+                                
                                 <video ref={videoRef} style={{ width: '100%', maxHeight: '200px', objectFit: 'cover' }} autoPlay muted />
-=======
->>>>>>> ae8215af3de5028735ec41ec6f8ce17f1207ba88
+
+                                <Button variant="contained" color="primary" style={{ marginBottom: 10 }} onClick={takePhoto} fullWidth>
+                                    Enviar Foto
+                                </Button>
                             </Grid>
                         </Grid>
                     </form>

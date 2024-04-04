@@ -50,19 +50,11 @@ const EditProfile = () => {
     });
 
     const resp = await endpoint.json();
-<<<<<<< HEAD
-    console.log("RESPUESTA DE ", resp)
-    console.log("sattus", endpoint.status)
-    if (endpoint.status === 400 || endpoint.status === 500 || endpoint.status === 422) {
-      setError(resp.mensaje);
-    } else {
-=======
     console.log("RESPUESTA DE " ,resp)
     console.log("sattus", endpoint.status)
     if (endpoint.status === 400 || endpoint.status === 500 || endpoint.status === 422) {
       setError(resp.mensaje);
     } else{
->>>>>>> ae8215af3de5028735ec41ec6f8ce17f1207ba88
 
       cookies.remove("session");
       cookies.set('session', resp);

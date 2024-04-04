@@ -9,10 +9,7 @@ import Profile from "../pages/Profile";
 import UploadPhoto from "../pages/UploadPhoto";
 import EditAlbum from "../pages/EditAlbum";
 import ShowPhotos from "../pages/ShowPhotos";
-<<<<<<< HEAD
 import Chatbot from "../pages/Chatbot";
-=======
->>>>>>> ae8215af3de5028735ec41ec6f8ce17f1207ba88
 
 export const App = () => {
   return (
@@ -27,10 +24,7 @@ export const App = () => {
             <Route path="/subirfoto" element={<UploadPhoto />}/>
             <Route path="/editalbum" element={<EditAlbum />}/>
             <Route path="/fotos" element={<ShowPhotos />}/>
-<<<<<<< HEAD
             <Route path="/chat" element={<Chatbot />}/>
-=======
->>>>>>> ae8215af3de5028735ec41ec6f8ce17f1207ba88
             </Routes>
         </Layout>   
     </BrowserRouter>

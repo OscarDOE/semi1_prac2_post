@@ -23,6 +23,25 @@ def detect_features_in_image(image_bytes):
 
     return detected_features
 
+def detect_features_in_image_login(image_bytes):
+    # Llamar a DetectLabels
+    response = rekognition.detect_labels(
+        Image={
+                'S3Object': {
+                    'Bucket': BUCKET_NAME,
+                    'Name': image_bytes
+                }
+            }
+    )
+
+    # Extraer etiquetas detectadas
+    detected_features = []
+    # print("REKOG LABERS : ",response)
+    for label in response['Labels']:
+        detected_features.append(label['Name'])
+
+    return detected_features
+
 # Comparar Rostros
 def compare_images(profile_picture_key: str, webcam_image: bytes):
     print("COMPARE")
