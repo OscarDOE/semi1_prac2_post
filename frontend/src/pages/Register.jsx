@@ -53,7 +53,11 @@ const Register = () => {
                             <Grid item>
                                 <div className="avatar" style={{ textAlign: 'center' }}>
                                     <img
+<<<<<<< HEAD
+                                        src="https://cdn-icons-png.flaticon.com/512/2433/2433214.png"
+=======
                                         src="https://yt3.ggpht.com/ytc/AKedOLTOxCzheuyu7Cw8Hsm1TvLlbekMeVVrE1c5zL6h=s900-c-k-c0x00ffffff-no-rj"
+>>>>>>> ae8215af3de5028735ec41ec6f8ce17f1207ba88
                                         alt=""
                                         style={{ width: '150px', height: 'auto' }}
                                     />

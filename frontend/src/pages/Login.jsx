@@ -13,6 +13,12 @@ const Login = () => {
 
     const navigate = useNavigate();
     const cookies = new Cookies();
+<<<<<<< HEAD
+    const videoRef = useRef(null);
+
+    const handleNavigate = () => {
+        navigate('/profile');
+=======
 
     const handleNavigate = () => {
         navigate('/profile')
@@ -24,6 +30,7 @@ const Login = () => {
     //     } else if (usuario_logeado.usuario_logeado.user_type === '2') {
     //         navigate('/inicio');
     //     }
+>>>>>>> ae8215af3de5028735ec41ec6f8ce17f1207ba88
     };
 
     const handleSubmit = async (e) => {
@@ -52,18 +59,41 @@ const Login = () => {
         }
     };
 
+<<<<<<< HEAD
+    const handleCameraAccess = async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            videoRef.current.srcObject = stream;
+        } catch (error) {
+            console.error('Error accessing camera:', error);
+        }
+    };
+
+    return (
+        <Grid container justifyContent="center" alignItems="center" style={{ height: '100vh', marginTop:25 }}>
+=======
     return (
         <Grid container justifyContent="center" alignItems="center" style={{ height: '100vh' }}>
+>>>>>>> ae8215af3de5028735ec41ec6f8ce17f1207ba88
             <Grid item xs={12} sm={8} md={6} lg={4}>
                 <Paper elevation={3} style={{ padding: 20 }}>
                     <form onSubmit={handleSubmit}>
                         <Grid container direction="column" spacing={2}>
                             <Grid item>
+<<<<<<< HEAD
+                                <div className="avatar" style={{ textAlign: 'center' }}>
+                                    <img src="https://bit.ly/31pHqJb" alt="" />
+
+                                </div>
+
+
+=======
                                 
                             <div className="avatar" style={{ textAlign: 'center' }}>
                                 <img src="https://bit.ly/31pHqJb" alt="" />
                             </div>
                                 
+>>>>>>> ae8215af3de5028735ec41ec6f8ce17f1207ba88
                             </Grid>
                             <Grid item>
                                 <div className="header">Ingresa tus datos</div>
@@ -91,6 +121,13 @@ const Login = () => {
                                 <Button type="submit" variant="contained" color="primary" fullWidth>
                                     Login
                                 </Button>
+<<<<<<< HEAD
+                                <Button variant="contained" color="primary" style={{marginTop:10, marginBottom:10}} onClick={handleCameraAccess} fullWidth>
+                                    Face ID
+                                </Button>
+                                <video ref={videoRef} style={{ width: '100%', maxHeight: '200px', objectFit: 'cover' }} autoPlay muted />
+=======
+>>>>>>> ae8215af3de5028735ec41ec6f8ce17f1207ba88
                             </Grid>
                         </Grid>
                     </form>
