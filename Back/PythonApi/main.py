@@ -299,6 +299,8 @@ async def seealbum(item: id):
 
     albums = {}
     for album_id, photo_album, album_name, photo_name, photo_id, photo_description in response:
+        # print("KKKKK", photo_id)
+        # print("MMMMMMM", photo_description)
         # Si el álbum ya está en el diccionario, agregamos la imagen al álbum existente
         if album_id in albums:
             link = s3_getlink(photo_album)
@@ -314,8 +316,7 @@ async def seealbum(item: id):
     response2 = execute_query(sql, params)
     print("-------------------- ")
     print("RESPONSE2, ",response2)
-    
-    link = s3_getlink(item[0])
+    link = s3_getlink(item.user)
     formatted_data2 = [{"url": link, "usuario": item[1]} for item in response2]
     # formatted_data.append(formatted_data2)
     arreglo = [formatted_data]
