@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import Cookies from 'universal-cookie';
 
 const Login = () => {
-    const ruta_AWS = 'http://localhost:8000';
+    const ruta_AWS = 'http://54.174.248.56:8000';
     const [error, setError] = useState(null);
     const [user, setUser] = useState({
         usuario: '',

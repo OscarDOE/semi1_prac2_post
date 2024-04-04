@@ -49,7 +49,7 @@ const Chatbot = () => {
         };
 
         // Enviar los datos al backend
-        fetch('http://localhost:8000/send_2bot', {
+        fetch('http://54.174.248.56:8000/send_2bot', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

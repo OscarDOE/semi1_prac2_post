@@ -75,6 +75,10 @@ const Profile = () => {
     const extraerTexto = () => {
         navigate("/extraer");
     }
+    
+    const chatBot = () => {
+        navigate("/chat");
+    }
 
 
 
@@ -165,6 +169,9 @@ const Profile = () => {
                         </Button>
                         <Button onClick={extraerTexto} variant="contained">
                             Extraer Texto
+                        </Button>
+                        <Button onClick={chatBot} variant="contained">
+                            ChatBot
                         </Button>
                     </Item>
 

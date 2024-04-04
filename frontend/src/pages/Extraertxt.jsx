@@ -15,7 +15,7 @@ const Extraertxt = () => {
         color: theme.palette.text.secondary,
     }));
 
-    const ruta_AWS = 'http://localhost:8000';
+    const ruta_AWS = 'http://54.174.248.56:8000';
     const navigate = useNavigate();
     const cookies = new Cookies();
     const usuario_logeado = cookies.get('session');

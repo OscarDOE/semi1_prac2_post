@@ -5,7 +5,7 @@ import Cookies from 'universal-cookie';
 
 const Register = () => {
     const navigate = useNavigate();
-    const ruta_AWS = 'http://localhost:8000';
+    const ruta_AWS = 'http://54.174.248.56:8000';
     const [value, setValue] = useState(false);
     const [error, setError] = useState(null);
     const [user, setUser] = useState({
