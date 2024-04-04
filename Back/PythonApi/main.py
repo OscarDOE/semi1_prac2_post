@@ -1,13 +1,17 @@
-import mysql.connector
+
 from fastapi import FastAPI, File, UploadFile, Form
-from pydantic import BaseModel
 import base64
-import boto3
+
+
 from datetime import datetime
 import hashlib
 from fastapi.middleware.cors import CORSMiddleware
 
-from models.models import Register, Login, id, Profile, Editalbum, Editprofile, uploadphoto, Createalbum
+from db.config import *
+from aws.s3 import putobject, deleteobject, getobject, s3_getlink
+from aws.rekognition import compare_images, detect_features_in_image, fatial_analisis, s3_extract_text
+from models.models import Login, id, Chat
+from aws.env import *
 
 app = FastAPI()
 # uvicorn main:app --reload
@@ -17,61 +21,9 @@ app.add_middleware(
     allow_origins=["*"],  # Permitir acceso desde cualquier origen
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE"],
-    # allow_headers=["Authorization", "Content-Type"],
+    allow_headers=["*"],
 )
 
-config = {
-    'user': 'admin',
-    'password': 'G13-semi1',
-    'host': 'semi1album.cp6ci0o0mhlv.us-east-1.rds.amazonaws.com',
-    'database': 'semi1album',
-    'port':'3306',
-    'raise_on_warnings': True,
-}
-
-    
-# Datos de AWS
-AWS_ACCESS = ''
-AWS_SECRET = ''
-BUCKET_NAME = ''
-region_name = ''
-
-
-
-# Instancia de rekognition
-# rekognition_client = boto3.client('rekognition', region_name=region_name, aws_access_key_id=AWS_ACCESS, aws_secret_access_key=AWS_SECRET)
-
-s3_client = boto3.client("s3", aws_access_key_id=AWS_ACCESS, aws_secret_access_key=AWS_SECRET)
-
-
-
-class Item(BaseModel):
-    name: str
-    gender: str
-    multiplayer: int
-
-
-# cnx = mysql.connector.connect(**config)
-def execute_query(query, params= None):
-    try:
-        connection = mysql.connector.connect(**config)
-        cursor = connection.cursor()
-        if params is None:
-            cursor.execute(query)
-        else:
-            cursor.execute(query, params)
-        if cursor.with_rows:
-            return cursor.fetchall()
-        else:
-            connection.commit()
-            cursor.close()
-            connection.close()        
-            # print("ENTRO TRYE DB", response)
-            return True
-    except Exception as e:
-        print("ENTRO EXCEPT", e)
-        return False
-    
 
 @app.post("/register")
 async def registeruser(photo: UploadFile = File(...), user: str = Form(...), name: str = Form(...), password: str = Form(...), confpass: str = Form(...)):
@@ -82,35 +34,43 @@ async def registeruser(photo: UploadFile = File(...), user: str = Form(...), nam
     exists_sql = f"SELECT EXISTS (SELECT 1 FROM user WHERE user = %s) AS user_exists"
     params = (user,)
     response = execute_query(exists_sql, params)
+    # print("RESPONSE", response)
+    print("ANTEs DE IF: ",response)
     if response[0] == 1:
         return {'Error':'El nombre de usuario ya existe '}
+    if response == False :
+        return {"Error":"Usuario no insertado, problemas con el usuario"}
 
     # Subir a S3
     file_contents = await photo.read()
     actual_date = datetime.now()
-    key = 'Fotos_Perfil/'+user+";"+photo.filename+str(actual_date)
+    key = 'Fotos_Perfil/'+user+";"+photo.filename.split(".")[0]+str(actual_date)+".jpg"
     user = key.split(";")[0].split("/")[-1]
     print("ENCONTRO EL USER",user)
-    s3_client.put_object(Bucket=BUCKET_NAME, Key=key, Body=file_contents)
-    link = s3_client.generate_presigned_url('get_object', Params={'Bucket':BUCKET_NAME, 'Key':key, }, ExpiresIn=None);
 
     passwordcode = hashlib.md5(password.encode()).hexdigest()
-    print(password)
-    print(passwordcode)
+
     # Aquí puedes procesar el archivo (file_contents) o guardarlos en S3, etc.
+    putobject(key, file_contents)
     insert_sql = f"INSERT INTO user (user, name, password, photo) VALUES (%s, %s, %s, %s)"
-    params = (user, name, passwordcode, link)
+    params = (user, name, passwordcode, key)
     response = execute_query(insert_sql, params)
-    if not response :
-        return {"Error":"Usuario no insertado"}
+
+    print("RESPONSE", response)
     
-    insert_sql_photo = f"INSERT INTO photoprofile (name, photo, user) VALUES (%s, %s, %s)"
-    params = (name, link, user)
+    if response == False :
+        return {"Error":"Usuario no insertado"}
+
+    last_id = response[1]
+        
+
+    insert_sql_photo = f"INSERT INTO photoprofile (name, photo, user_id) VALUES (%s, %s, %s)"
+    params = (name, key, last_id)
     response = execute_query(insert_sql_photo, params)
-    if response :
+    if response:
         return {"mensaje":"Usuario insertado con éxito"}
     else:
-        return {"Error":"Usuario no insertado"}
+        return {"Error":"No se agregó imágen "}
 
 
 @app.post("/login")
@@ -126,19 +86,60 @@ async def loginuser(item: Login):
     sql = f"SELECT user, name, photo, id FROM user WHERE user = %s"
     params = (item.user,)
     response = execute_query(sql, params)
+    
+    link = s3_getlink(response[0][2])
+
+    print("KEY",response[0][2])
+    features = fatial_analisis(response[0][2])
+    features = features['FaceDetails'][0]
+    print(features)
+
+
 
     # print("RESPONSE LOGIN", response[0])
     toreturn = {"user":response[0][0],
             "name":response[0][1],
-            "photo":response[0][2],
-            "id":response[0][3]
+            "photo":link,
+            "id":response[0][3],
+            "features":features
     }
     return toreturn
     # return {"mensaje": "Contraseña confirmada",
     #         "user" : item.user}
 
-# @app.get("/profile")
-# async def seeprofile(item: id):
+@app.post("/camera_login")
+async def login_camera(photo: UploadFile = File(...), user: str = Form(...)):
+    sql = f"SELECT COUNT(*) AS exist FROM user WHERE user = %s"
+    params = (user)
+    response = execute_query(sql, params)
+
+    print(response)
+    print("RERERE",response[0])
+    if response[0][0] == 0:
+        return {"Error": "El usuario o la contraseña no coinciden"}
+    sql = f"SELECT user, name, photo, id FROM user WHERE user = %s"
+    params = (user,)
+    response = execute_query(sql, params)
+    
+
+    file_contents = await photo.read()
+    profile_photo = response[0][2]
+    compare = compare_images(profile_photo, file_contents)
+
+    link = s3_getlink(response[0][2])
+    features = fatial_analisis(response[0][2])
+    features = features['FaceDetails'][0]
+
+
+    toreturn = {"user":response[0][0],
+            "name":response[0][1],
+            "photo":link,
+            "id":response[0][3],
+            "features":features,
+    }
+    return toreturn
+
+
 
 @app.post("/editprofile")
 async def edituserprofile(photo: UploadFile = File(None), name: str = Form(...), password: str = Form(...), newuser: str = Form(...), id: int = Form(...)):
@@ -171,9 +172,8 @@ async def edituserprofile(photo: UploadFile = File(None), name: str = Form(...),
         actual_date = datetime.now()
         key = 'Fotos_Perfil/'+str(id)+";"+photo.filename+str(actual_date)
         user = key.split(";")[0].split("/")[-1]
-        s3_client.put_object(Bucket=BUCKET_NAME, Key=key, Body=file_contents)
-        link = s3_client.generate_presigned_url('get_object', Params={'Bucket':BUCKET_NAME, 'Key':key, }, ExpiresIn=None);
-
+        link = putobject(key, file_contents)
+        
         insert_sql_photo = f"INSERT INTO photoprofile (name, photo, user_id) VALUES (%s, %s, %s)"
         params_phot = (name, link, id)
         response = execute_query(insert_sql_photo, params_phot)
@@ -193,16 +193,16 @@ async def edituserprofile(photo: UploadFile = File(None), name: str = Form(...),
         return {"Error":"No se ha podido editar al usuario"},400
 
 
-@app.post("/createalbum")
-async def editalbum(item: Createalbum):
-    insert_sql = f"INSERT INTO album (user_id, name) VALUES (%s, %s)"
-    params = (item.id, item.album)
-    response = execute_query(insert_sql, params)
-    print(response)
-    if response :
-        return {"mensaje":"Álbum creado correctamente"}
-    else:
-        return {"Error":"No se ha podido crear el álbum"}
+# @app.post("/createalbum")
+# async def editalbum(item: Createalbum):
+#     insert_sql = f"INSERT INTO album (user_id, name) VALUES (%s, %s)"
+#     params = (item.id, item.album)
+#     response = execute_query(insert_sql, params)
+#     print(response)
+#     if response :
+#         return {"mensaje":"Álbum creado correctamente"}
+#     else:
+#         return {"Error":"No se ha podido crear el álbum"}
 
 @app.post("/justalbums")
 async def seealbum(item: id):
@@ -217,48 +217,78 @@ async def seealbum(item: id):
     print(albumes)
     return albumes
 
-@app.post("/editalbum")
-async def editalbum(item: Editalbum):
-    sql = f"UPDATE album SET name = %s WHERE id = %s AND user_id = %s"
-    params = (item.newalbum, item.id_album, item.id)
-    response = execute_query(sql, params)
-    if response :
-        return {"mensaje":"Álbum editado correctamente"}
-    else:
-        return {"Error":"No se ha podido editar al álbum"}
+# @app.post("/editalbum")
+# async def editalbum(item: Editalbum):
+#     sql = f"UPDATE album SET name = %s WHERE id = %s AND user_id = %s"
+#     params = (item.newalbum, item.id_album, item.id)
+#     response = execute_query(sql, params)
+#     if response :
+#         return {"mensaje":"Álbum editado correctamente"}
+#     else:
+#         return {"Error":"No se ha podido editar al álbum"}
 
-@app.post("/deletealbum")
-async def deletealbum(item: id):
-    entero = int(item.user)
-    sql = f"DELETE FROM album WHERE id = %s"
-    params = (item.user,)
-    response = execute_query(sql, params)
-    print(item)
-    if response :
-        return {"mensaje":"Álbum eliminado correctamente"}
-    else:
-        return {"Error":"No se ha podido eliminar al álbum"}
+# @app.post("/deletealbum")
+# async def deletealbum(item: id):
+#     entero = int(item.user)
+#     sql = f"DELETE FROM album WHERE id = %s"
+#     params = (item.user,)
+#     response = execute_query(sql, params)
+#     print(item)
+#     if response :
+#         return {"mensaje":"Álbum eliminado correctamente"}
+#     else:
+#         return {"Error":"No se ha podido eliminar al álbum"}
 
 
 @app.post("/upload")
-async def uploadimage(photo: UploadFile = File(...), album: str = Form(...), name: str = Form(...), id: str = Form(...)):
-    # Subir a S3
+async def uploadimage(photo: UploadFile = File(...), name: str = Form(...), id: str = Form(...), description: str = Form(...)):
+    # OBtener Imagen y llave
     file_contents = await photo.read()
     actual_date = datetime.now()
-    key = 'Fotos_Publicadas/'+id+";"+photo.filename+str(actual_date)
+    key = 'Fotos_Publicadas/'+id+";"+photo.filename.split(".")[0]+str(actual_date)
     user = key.split(";")[0].split("/")[-1]
     print("ENCONTRO EL USER",user)
-    s3_client.put_object(Bucket=BUCKET_NAME, Key=key, Body=file_contents)
-    link = s3_client.generate_presigned_url('get_object', Params={'Bucket':BUCKET_NAME, 'Key':key, }, ExpiresIn=None);
 
+    # Verificar si se creará un nuevo album
+    isnewalbum = detect_features_in_image(file_contents)
+    print("ENCONTRO EL USER",isnewalbum[0])
+    print("************************** SALIO")
 
-    insert_sql = f"INSERT INTO photoalbum (photo, album_id, name ) VALUES (%s, %s, %s)"
-    params = (link, album, name)
+    exists_sql = f"SELECT EXISTS (SELECT 1 FROM album WHERE name = %s AND user_id = %s) AS user_exists"
+    params = (isnewalbum[0], id)
+    response = execute_query(exists_sql, params)
+    # print("RESPONSE", response)
+    print("ANTEs DEL CREAR ALBUM:  ",response)
+    if response and response[0][0] == 1:
+        print("Ya existe")
+    else:
+        print("ENTRO  A NUEVO ALBUM:  ")
+        # El nombre de album ya existe para este usuario
+        insert_sql = f"INSERT INTO album (user_id, name) VALUES (%s, %s)"
+        params = (id, isnewalbum[0])
+        response = execute_query(insert_sql, params)
+        print(response)
+
+    # Agregando a S3
+    putobject(key, file_contents)
+    # Ingresando a album la imagen, confirmando que existe solo 1
+    last_id_sql = f"SELECT id FROM album WHERE name = %s AND user_id = %s"
+    params = (isnewalbum[0], id)
+    response = execute_query(last_id_sql, params)
+    if(len(response) > 1):
+        return {"Error": "Hay más de 1 album con ese nombre"}
+    print("LAST ID:  ",response, " SOLO ID: ", response[0][0])
+    last_id = response[0][0]
+    # Insertando la foto
+    insert_sql = f"INSERT INTO photoalbum (photo, album_id, name, description ) VALUES (%s, %s, %s, %s)"
+    params = (key, last_id, name, description)
+
     response = execute_query(insert_sql, params)
     if response :
         return {"mensaje":"Foto subida correctamente"}
     else:
         return {"Error":"No se ha podido subir la foto"}
+
 
 @app.post("/albums")
 async def seealbum(item: id):
@@ -289,9 +319,9 @@ async def seealbum(item: id):
     arreglo.append(formatted_data2)
     return arreglo
 
-@app.get("/albumsprofile")
+@app.post("/albumsprofile")
 async def seealbum(item: id):
-    sql = f"SELECT a.name AS Album_name, p.name AS Photo_name, p.photo AS Link FROM album a , photoalbum p, user u WHERE a.id = p.album_id AND a.user = %s"
+    sql = f"SELECT pp.photo AS photo_profile, pp.name AS photo_name FROM user u JOIN photoprofile pp ON u.id = pp.user_id WHERE u.id = %s"
     params = (item.user,)
     response = execute_query(sql, params)
     print(response)
@@ -304,8 +334,18 @@ async def seealbum(item: id):
     }
     return toreturn
 
+@app.post("/extracttext")
+async def extractingtext(photo: UploadFile = File(...)):
+    file_contents = await photo.read()
+    response = s3_extract_text(file_contents)
+    print(response)
 
-
+    
+    return response
+@app.post("/send_2bot")
+async def chatbot(item: Chat):
+    
+    return True
 
 # @app.get("/")
 # def get_main():
