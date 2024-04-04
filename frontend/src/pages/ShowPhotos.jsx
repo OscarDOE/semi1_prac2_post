@@ -25,9 +25,10 @@ const ShowPhotos = () => {
     useEffect(() => {getPhotos()}, [] );
 
     const getPhotos = async (e) => {
+        const u = String(usuario_logeado?.id)
 
         const data = {
-            user:usuario_logeado?.id
+            user: u
         };
 
         const endpoint = await fetch(`${ruta_AWS}/albums`, {
@@ -112,6 +113,7 @@ const ShowPhotos = () => {
 
 
                     {albums.map((album) => (
+                        
                         <Grid item>
                             <Item>
                                 <h2>{album.nombre}</h2>
@@ -124,6 +126,9 @@ const ShowPhotos = () => {
                                                     src={foto.url}
                                                     style={{ width: "100%"  }}
                                                 />
+                                                <h3>{foto.name}</h3>
+                                                <h4>{foto.description}</h4>
+                                                <h4>{foto.descriptions.en}</h4>
                                             </Item>
                                         </Grid>
                                     ))}

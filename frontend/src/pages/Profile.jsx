@@ -72,6 +72,10 @@ const Profile = () => {
         navigate("/editprofile");
     }
 
+    const extraerTexto = () => {
+        navigate("/extraer");
+    }
+
 
 
 
@@ -156,8 +160,11 @@ const Profile = () => {
                         <Button onClick={editarAlbum} variant="contained" sx={{ mr: 3 }}>
                             Editar Álbum
                         </Button>
-                        <Button onClick={editarPerfil} variant="contained">
+                        <Button onClick={editarPerfil} variant="contained" sx={{ mr: 3 }}>
                             Editar Perfil
+                        </Button>
+                        <Button onClick={extraerTexto} variant="contained">
+                            Extraer Texto
                         </Button>
                     </Item>
 

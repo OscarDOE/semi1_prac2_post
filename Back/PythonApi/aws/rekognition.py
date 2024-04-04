@@ -100,7 +100,8 @@ def s3_extract_text(image):
         text = ""
         for text_detection in response['TextDetections']:
             # Imprime el texto detectado
-            text += text_detection['DetectedText']
+            if text_detection['Type'] == 'WORD':
+                text += " " + text_detection['DetectedText']
             # print('Texto detectado:', text_detection['DetectedText'])
         return text
     except Exception as e:

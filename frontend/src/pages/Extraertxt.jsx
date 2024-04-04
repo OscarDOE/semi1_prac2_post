@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import Cookies from 'universal-cookie';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
-const UploadPhoto = () => {
+const Extraertxt = () => {
 
     const Item = styled(Paper)(({ theme }) => ({
         backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
@@ -24,6 +24,8 @@ const UploadPhoto = () => {
     const [albumelegido, setAlbumelegido] = useState(null);
     const [error, setError] = useState(null);
     const [albums, setAlbums] = useState(null);
+    const [text, setText] = useState(null);
+
     const [fotoinfo, setFotoinfo] = useState({
         nombre: '',
         descripcion: '',
@@ -34,47 +36,47 @@ const UploadPhoto = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         const formData = new FormData();
-        formData.append('name', fotoinfo.nombre);
         formData.append('photo', fotoinfo.foto);
-        formData.append('description', fotoinfo.descripcion);
-        formData.append('id', usuario_logeado?.id);
 
-        const endpoint = await fetch(`${ruta_AWS}/upload`, {
+        const endpoint = await fetch(`${ruta_AWS}/extracttext`, {
             method: 'POST',
             body: formData
         });
 
-        const resp = await endpoint.json();
         
+
+        const resp = await endpoint.json();
+
+        console.log(resp);
         if (endpoint.status === 400) {
             setError(resp.mensaje);
         } else {
-            alert(resp.mensaje)
+            setText(resp)
             setError(null);
         }
     };
 
     const getAlbums = async () => {
         const data = {
-          user: usuario_logeado?.id,
+            user: usuario_logeado?.id,
         };
-    
+
         const endpoint = await fetch(`${ruta_AWS}/justalbums`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(data),
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
         });
-    
+
         const resp = await endpoint.json();
         console.log(resp);
-    
+
         if (endpoint.status === 400) {
-          setError(resp.message);
+            setError(resp.message);
         } else {
-          setAlbums(resp);
-          setError(null);
+            setAlbums(resp);
+            setError(null);
         }
     };
 
@@ -97,7 +99,7 @@ const UploadPhoto = () => {
                 <Grid container spacing={4} justifyContent="center" alignItems="center" style={{ marginTop: '20px' }}>
                     <Grid item xs={6}>
                         <Item >
-                            <h1>Subir Foto</h1>
+                            <h1>Extraer texto</h1>
                         </Item>
                     </Grid>
                     <Grid item xs={2}>
@@ -120,25 +122,19 @@ const UploadPhoto = () => {
                     </Grid>
                     <Grid item xs={4} >
                         <Paper elevation={3} style={{ padding: 20 }}>
-                            <TextField
-                                fullWidth
-                                label="Nombre de la foto"
-                                id="nombre"
-                                name="nombre"
-                                onChange={(e) => setFotoinfo({ ...fotoinfo, nombre: e.target.value })}
-                                sx={{ marginBottom: '10px' }}
-                            />
-                            <TextField
-                                fullWidth
-                                label="Descripcion de la foto"
-                                id="desc"
-                                name="desc"
-                                onChange={(e) => setFotoinfo({ ...fotoinfo, descripcion: e.target.value })}
-                                sx={{ marginBottom: '10px' }}
-                            />
+
+                                <h3>Características:</h3>
+                                <br></br>
+                                <h4>{text}</h4>
+                                <br></br>
+
+                        
+
+
+
                             <center>
                                 <Button type="submit" variant="contained" color="success">
-                                    Subir Foto
+                                    Extraer texto
                                 </Button>
                             </center>
                         </Paper>
@@ -150,4 +146,4 @@ const UploadPhoto = () => {
     );
 };
 
-export default UploadPhoto;
+export default Extraertxt;

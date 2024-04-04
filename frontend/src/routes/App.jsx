@@ -10,6 +10,7 @@ import UploadPhoto from "../pages/UploadPhoto";
 import EditAlbum from "../pages/EditAlbum";
 import ShowPhotos from "../pages/ShowPhotos";
 import Chatbot from "../pages/Chatbot";
+import Extraertxt from "../pages/Extraertxt";
 
 export const App = () => {
   return (
@@ -25,6 +26,7 @@ export const App = () => {
             <Route path="/editalbum" element={<EditAlbum />}/>
             <Route path="/fotos" element={<ShowPhotos />}/>
             <Route path="/chat" element={<Chatbot />}/>
+            <Route path="/extraer" element={<Extraertxt />}/>
             </Routes>
         </Layout>   
     </BrowserRouter>
