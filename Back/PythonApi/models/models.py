@@ -10,6 +10,7 @@ class id(BaseModel):
 
 class Chat(BaseModel):
     message:str
+    session_id: str
 
 class Translate(BaseModel):
     message: str

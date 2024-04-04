@@ -11,6 +11,7 @@ from db.config import *
 from aws.s3 import putobject, deleteobject, getobject, s3_getlink
 from aws.rekognition import compare_images, detect_features_in_image, detect_features_in_image_login, fatial_analisis, s3_extract_text
 from aws.translate import translate_text
+from aws.lex import send_message_lex
 from models.models import Login, id, Chat, Translate
 from aws.env import *
 
@@ -372,8 +373,8 @@ async def extractingtext(photo: UploadFile = File(...)):
 
 @app.post("/send_2bot")
 async def chatbot(item: Chat):
-    
-    return True
+    response = send_message_lex(item.message, item.session_id)
+    return response
 
 # @app.get("/")
 # def get_main():
