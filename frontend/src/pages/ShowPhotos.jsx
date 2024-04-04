@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Alert, Grid, Paper, TextField, Button, Box } from "@mui/material";
+import { Alert, Grid, Paper, TextField, Button, Box, Select, MenuItem } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { useNavigate } from "react-router-dom";
 import Cookies from "universal-cookie";
@@ -21,6 +21,7 @@ const ShowPhotos = () => {
     const [error, setError] = useState(null);
     const [albums, setAlbums] = useState([]);
     const [albumsdos, setAlbumsDos] = useState([]);
+    const [language, setLanguage] = useState('en'); // Estado para el idioma seleccionado
 
     useEffect(() => {getPhotos()}, [] );
 
@@ -54,10 +55,12 @@ const ShowPhotos = () => {
         navigate("/profile");
     };
 
-
+    // Función para cambiar el idioma seleccionado
+    const handleChangeLanguage = (event) => {
+        setLanguage(event.target.value);
+    };
 
     return (
- 
         <Box sx={{ flexGrow: 1 }}>
             <Grid
                 container
@@ -79,6 +82,21 @@ const ShowPhotos = () => {
                         </Button>
                     </Item>
                 </Grid>
+                {/* Selector de idioma */}
+                <Grid item xs={2}>
+                    <Item>
+                        <Select
+                            labelId="language-select-label"
+                            id="language-select"
+                            value={language}
+                            onChange={handleChangeLanguage}
+                        >
+                            <MenuItem value="en">Inglés</MenuItem>
+                            <MenuItem value="ja">Japonés</MenuItem>
+                            <MenuItem value="fr">Francés</MenuItem>
+                        </Select>
+                    </Item>
+                </Grid>
             </Grid>
 
             <div style={{ maxWidth: "85%", margin: "0 auto" }}>
@@ -86,7 +104,7 @@ const ShowPhotos = () => {
                     container
                     direction="column"
                     justifyContent="center"
-                    rowSpacing={1}
+                    rowSpacing={2}
                     style={{ marginTop: "20px" }}
                 >
                     {/* Mostrar los álbumes y las fotos */}
@@ -94,7 +112,7 @@ const ShowPhotos = () => {
                     <Grid item>
                         <Item>
                             <h2>Perfil</h2>
-                            <Grid container justifyContent="center" spacing={2}>
+                            <Grid container justifyContent="center">
                                 {/* Mostrar cada foto dentro del álbum */}
                                 {albumsdos.map((foto) => (
                                     <Grid xs={2}  item>
@@ -110,17 +128,14 @@ const ShowPhotos = () => {
                         </Item>
                     </Grid>
 
-
-
                     {albums.map((album) => (
-                        
-                        <Grid item>
+                        <Grid item > {/* Agregar key prop */}
                             <Item>
                                 <h2>{album.nombre}</h2>
-                                <Grid container justifyContent="center" spacing={2}>
+                                <Grid container justifyContent="center" >
                                     {/* Mostrar cada foto dentro del álbum */}
                                     {album.fotos.map((foto) => (
-                                        <Grid xs={2} item>
+                                        <Grid xs={3} item key={foto.name}> {/* Agregar key prop */}
                                             <Item>
                                                 <img
                                                     src={foto.url}
@@ -128,7 +143,8 @@ const ShowPhotos = () => {
                                                 />
                                                 <h3>{foto.name}</h3>
                                                 <h4>{foto.description}</h4>
-                                                <h4>{foto.descriptions.en}</h4>
+                                                {/* Mostrar la descripción según el idioma seleccionado */}
+                                                <h4>{foto.descriptions[language]}</h4>
                                             </Item>
                                         </Grid>
                                     ))}
@@ -136,12 +152,8 @@ const ShowPhotos = () => {
                             </Item>
                         </Grid>
                     ))}
-
-                   
-
                 </Grid>
             </div>
-
             {error && <Alert severity="error">{error}</Alert>}
         </Box>
     );

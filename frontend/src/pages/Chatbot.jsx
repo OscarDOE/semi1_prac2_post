@@ -2,11 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Container, TextField, Button, Grid, Avatar, Paper, Box } from '@mui/material';
 import { styled } from "@mui/material/styles";
 
-
-
 const Chatbot = () => {
-
-
     const Item = styled(Paper)(({ theme }) => ({
         backgroundColor: theme.palette.mode === "dark" ? "#1A2027" : "#fff",
         ...theme.typography.body2,
@@ -14,9 +10,6 @@ const Chatbot = () => {
         textAlign: "center",
         color: theme.palette.text.secondary,
     }));
-
-
-
 
     const [messages, setMessages] = useState([]);
     const [inputText, setInputText] = useState('');
@@ -30,18 +23,50 @@ const Chatbot = () => {
         scrollToBottom();
     }, [messages]);
 
+    useEffect(() => {
+        // Generar un número de sesión aleatorio al cargar la página
+        const sessionNumber = Math.floor(Math.random() * 1000);
+        localStorage.setItem('sessionNumber', sessionNumber);
+    }, []);
+
+    
+
     const handleMessageSend = () => {
         if (inputText.trim() === '') return;
 
         const newMessages = [...messages, { text: inputText.trim(), sender: 'user' }];
         setMessages(newMessages);
-        // Simulate response from the chatbot
-        setTimeout(() => {
-            const response = getChatbotResponse(inputText);
-            const updatedMessages = [...newMessages, { text: response, sender: 'chatbot' }];
-            setMessages(updatedMessages);
-        }, 500);
         setInputText('');
+
+        // Generar un número de sesión aleatorio
+        const sessionNumber = localStorage.getItem('sessionNumber');
+
+        const idd = String(sessionNumber)
+        // Objeto que contiene los datos a enviar al backend
+        const data = {
+            message: inputText.trim(),
+            session_id: idd
+        };
+
+        // Enviar los datos al backend
+        fetch('http://localhost:8000/send_2bot', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Manejar la respuesta del backend si es necesario
+            console.log('Response from backend:', data);
+            const concatenatedMessages = data.map(item => item.content).join('\n');
+            const updatedMessages = [...newMessages, { text: concatenatedMessages, sender: 'chatbot' }];
+            setMessages(updatedMessages);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
     };
 
     const handleKeyPress = (e) => {
@@ -51,19 +76,7 @@ const Chatbot = () => {
         }
     };
 
-    const getChatbotResponse = (message) => {
-        if (message.toLowerCase().includes('hello') || message.toLowerCase().includes('hi')) {
-            return "Hi there! How can I assist you?";
-        } else if (message.toLowerCase().includes('how are you')) {
-            return "I'm just a chatbot, but I'm doing well! How about you?";
-        } else {
-            return "I'm sorry, I'm not sure how to respond to that.";
-        }
-    };
-
     return (
-
-
         <Box sx={{ flexGrow: 1 }}>
             <Grid container spacing={2} justifyContent="center" alignItems="center" style={{ marginTop: "10px" }}>
                 <Grid item xs={8}>
@@ -109,14 +122,12 @@ const Chatbot = () => {
                                 color="primary"
                                 onClick={handleMessageSend}
                                 style={{ marginLeft: '10px' }}
-                                 // Añadimos un margen izquierdo para separar el botón del TextField
                             >
                                 Send
                             </Button>
                         </Grid>
                     </Grid>
                 </Grid>
-
             </Grid>
         </Box>
     );
