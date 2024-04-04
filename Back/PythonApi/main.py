@@ -292,19 +292,21 @@ async def uploadimage(photo: UploadFile = File(...), name: str = Form(...), id: 
 
 @app.post("/albums")
 async def seealbum(item: id):
-    sql = f"SELECT a.id AS ID_ALBUM, pa.photo AS photo_album, a.name AS album_name, pa.name AS photo_name, pa.id AS ID_PHOTO FROM user u JOIN album a ON u.id = a.user_id JOIN photoalbum pa ON a.id = pa.album_id WHERE u.id = %s"
+    sql = f"SELECT a.id AS ID_ALBUM, pa.photo AS photo_album, a.name AS album_name, pa.name AS photo_name, pa.id AS ID_PHOTO, pa.description AS photo_description FROM user u JOIN album a ON u.id = a.user_id JOIN photoalbum pa ON a.id = pa.album_id WHERE u.id = %s"
     params = (item.user,)
     response = execute_query(sql, params)
     print("RESPONSE 1: ",response)
 
     albums = {}
-    for album_id, photo_album, album_name, photo_name, photo_id in response:
+    for album_id, photo_album, album_name, photo_name, photo_id, photo_description in response:
         # Si el álbum ya está en el diccionario, agregamos la imagen al álbum existente
         if album_id in albums:
-            albums[album_id]["fotos"].append({"id": photo_id, "url": photo_album, "descripcion": photo_name})
+            link = s3_getlink(photo_album)
+            albums[album_id]["fotos"].append({"id": photo_id, "url": link, "name": photo_name, "description": photo_description})
         # Si no, creamos un nuevo álbum y agregamos la imagen al álbum
         else:
-            albums[album_id] = {"id": album_id, "nombre": album_name, "fotos": [{"id": photo_id, "url": photo_album, "descripcion": photo_name}]}
+            link = s3_getlink(photo_album)
+            albums[album_id] = {"id": album_id, "nombre": album_name, "fotos": [{"id": photo_id, "url": link, "name": photo_name, "description": photo_description}]}
 
     formatted_data = list(albums.values())
 
@@ -312,8 +314,9 @@ async def seealbum(item: id):
     response2 = execute_query(sql, params)
     print("-------------------- ")
     print("RESPONSE2, ",response2)
-
-    formatted_data2 = [{"url": item[0], "usuario": item[1]} for item in response2]
+    
+    link = s3_getlink(item[0])
+    formatted_data2 = [{"url": link, "usuario": item[1]} for item in response2]
     # formatted_data.append(formatted_data2)
     arreglo = [formatted_data]
     arreglo.append(formatted_data2)
