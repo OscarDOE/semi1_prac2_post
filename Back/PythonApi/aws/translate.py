@@ -2,7 +2,7 @@ import boto3
 
 from aws.env import *
 
-def translate_text(text_to_translate):
+def translate_text(text_to_translate, lang):
     # Create an AWS Translate client
     translate_client = boto3.client('translate',
         aws_access_key_id=AWS_ACCESS_TRANSLATE,
@@ -13,7 +13,7 @@ def translate_text(text_to_translate):
     source_language = "es"
 
     # Target languages for translation
-    target_languages = ["en", "jp", "fr"]
+    target_languages = ["en", "ja", "fr"]
 
     # Dictionary to store translations
     translations = {}
